@@ -4,14 +4,15 @@ FROM opensuse
 # Dockerfile author / maintainer 
 MAINTAINER Saurabh Pandit <saurabh201189@gmail.com>
 
+# Update any module whose update are available
 RUN zypper --non-interactive up
 
-# Added required utilities to the image
-RUN zypper --non-interactive ar http://download.opensuse.org/repositories/home:ecsos/openSUSE_Leap_42.2/home:ecsos.repo
+# Adding oracle install file to tmp folder
+ADD oracle-instantclient*.rpm /tmp/
 
-# Refresh the repo
-RUN zypper --no-gpg-checks refresh
-
-# Install oracle instant client
-# RUN zypper --non-interactive install curl
-RUN zypper --non-interactive install oracle-instantclient
+# Installing oracle instant client
+RUN rpm -ivh /tmp/oracle-instantclient*.rpm && \
+    rm -rf /var/cache/zypp && \
+    rm -f /tmp/oracle-instantclient*.rpm && \
+    echo /usr/lib/oracle/12.2/client64/lib > /etc/ld.so.conf.d/oracle-instantclient12.2.conf && ldconfig && \
+    echo 'export LD_LIBRARY_PATH="/usr/lib/oracle/12.2/client64/lib";export ORACLE_HOME="/usr/lib/oracle/12.2/client64/lib";' > /etc/bash.bashrc.local
